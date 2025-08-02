@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 	"time"
 
@@ -24,6 +25,8 @@ func CreateOrder(db *gorm.DB) gin.HandlerFunc {
 		order.ID = uuid.New().String()
 		order.Status = "PENDING"
 		order.CreatedAt = time.Now()
+
+		log.Printf(`{"message":"Create order calling %v", "service":"order", "severity":"INFO"}`, order)
 
 		if err := db.Create(&order).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -62,6 +65,11 @@ func UpdateOrderStatus(db *gorm.DB) gin.HandlerFunc {
 
 		if err := c.ShouldBindJSON(&input); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if err := db.First(&models.Order{}, "id = ?", id).Error; err != nil {
+			c.JSON(http.StatusNotAcceptable, gin.H{"error": err.Error()})
 			return
 		}
 

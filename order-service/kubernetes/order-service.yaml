@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service
+  namespace: order-service
+  labels:
+    app: order-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: order-service
+  template:
+    metadata:
+      labels:
+        app: order-service
+    spec:
+      serviceAccountName: order-ksa
+      containers:
+        - name: order
+          image: us-central1-docker.pkg.dev/go-poc-58/order-service-repo/order-service:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "200m"
+              memory: "500Mi"
+          env:
+            - name: ENV
+              value: "dev"
+            - name: DB_USER
+              value: "shivani"
+            - name: DB_HOST
+              value: "34.9.56.176"
+            - name: DB_PORT
+              value: "3306"
+            - name: DATABASE
+              value: "orders_db"
+            # - name: PORT
+            #   value: "8080"
+            # - name: SERVICE_NAME
+            #   value: "order-service"
+            # - name: SERVICE_HOST
+            #   value: "order-service"
+            # - name: SERVICE_PORT
+            #   value: "8081"
+            # - name: CONSUL_ADDRESS
+            #   value: "consul:8500"
+            # - name: ORDER_CREATED_TOPIC
+            #   value: "order-events"
+            # - name: PAYMENT_SUCCESS_SUB
+            #   value: "payment-processing-sub"
+            # - name: AUTH_SERVICE_URL
+            #   value: "http://34.131.57.123.nip.io"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service
+  namespace: order-service
+spec:
+  selector:
+    app: order-service
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer
+
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: order-quota
+  namespace: order-service
+spec:
+  hard:
+    requests.cpu: "1"
+    requests.memory: "1Gi"
+    limits.cpu: "2"
+    limits.memory: "2Gi"
+    pods: "5"
