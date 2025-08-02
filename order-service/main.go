@@ -2,25 +2,14 @@ package main
 
 import (
 	"log"
-	"order-service/config"
-	"order-service/handlers"
-	"order-service/middleware"
 	"order-service/pubsub"
-
-	"github.com/gin-gonic/gin"
+	"order-service/routes"
+	"order-service/utils"
 )
 
 func main() {
-	db := config.InitDB()
-	r := gin.Default()
-
-	r.Use(middleware.JWTAuth())
-
-	r.POST("/orders", handlers.CreateOrder(db))
-	r.GET("/orders/:id", handlers.GetOrder(db))
-	r.PATCH("/orders/:id/status", handlers.UpdateOrderStatus(db))
-
-	log.Println("Starting Order Service...")
+	utils.LoadEnvVariables()
+	r := routes.SetupRouter()
 
 	// Run the HTTP server in a goroutine
 	go func() {
@@ -31,7 +20,7 @@ func main() {
 
 	// Run the Pub/Sub subscriber in a goroutine
 	go func() {
-		pubsub.SubscribeToPaymentEvents(db)
+		pubsub.SubscribeToPaymentEvents()
 	}()
 
 	// Block main from exiting

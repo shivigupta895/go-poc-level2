@@ -4,28 +4,30 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"order-service/config"
 	"order-service/models"
 
 	"cloud.google.com/go/pubsub"
 )
 
-var topicID = "tp-order-events"
-
 func PublishOrderCreated(order models.Order) {
 	ctx := context.Background()
-	client, err := pubsub.NewClient(ctx, "potent-orbit-456909-f4")
+	client, err := pubsub.NewClient(ctx, config.GcpPojectId)
 	if err != nil {
-		log.Printf("PubSub client error to publish order event: %v", err)
+		log.Printf(`{"message":"PubSub client error to publish order event: %v", "service":"order", "severity":"ERROR"}`, err)
 		return
 	}
 
-	topic := client.Topic(topicID)
+	log.Println(`{"message":"Client created in PubSub request", "service":"order", "severity":"INFO"}`)
+
+	topic := client.Topic(config.OrderTopicId)
 	data, _ := json.Marshal(order)
-	log.Printf("Order created data line 24 : %v", order)
 	result := topic.Publish(ctx, &pubsub.Message{Data: data})
 
 	_, err = result.Get(ctx)
 	if err != nil {
-		log.Printf("Failed to publish order event: %v", err)
+		log.Printf(`{"message":"Failed to publish order event: %v", "service":"order", "severity":"ERROR"}`, err)
 	}
+
+	log.Printf(`{"message":"Successfully published order event: %v", "service":"order", "severity":"INFO"}`, order)
 }
