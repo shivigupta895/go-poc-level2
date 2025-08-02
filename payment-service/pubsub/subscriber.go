@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"payment-service/config"
 	"payment-service/models"
 	"time"
 
@@ -12,30 +13,28 @@ import (
 	"gorm.io/gorm"
 )
 
-type OrderEvent struct {
-	ID     string  `json:"id"`
-	Item   string  `json:"item"`
-	Amount float64 `json:"amount"`
-	Status string  `json:"status"`
-}
-
 func SubscribeToOrderEvents(db *gorm.DB) {
 	ctx := context.Background()
-	client, err := pubsub.NewClient(ctx, "potent-orbit-456909-f4")
+	client, err := pubsub.NewClient(ctx, config.GcpPojectId)
 	if err != nil {
-		log.Fatalf("Failed to create Pub/Sub client: %v", err)
+		log.Printf(`{"message":"Failed to create Pub/Sub client to subscribe order event: %v", "service":"payment", "severity":"ERROR"}`, err)
 	}
 
-	sub := client.Subscription("sb-payment-events")
+	log.Println(`{"message":"Client created in PubSub request to subscribe order event", "service":"payment", "severity":"INFO"}`)
+
+	sub := client.Subscription(config.PaymentSubId)
 	err = sub.Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
-		var event OrderEvent
+		var event struct {
+			ID string `json:"id"`
+		}
+
 		if err := json.Unmarshal(msg.Data, &event); err != nil {
-			log.Printf("Error parsing message: %v", err)
+			log.Printf(`{"message":"Error parsing message inside subscriber: %v", "service":"payment", "severity":"ERROR"}`, err)
 			msg.Nack()
 			return
 		}
 
-		log.Printf("Received order event: %+v", event)
+		log.Printf(`{"message":"Successfully received order event: %+v", "service":"payment", "severity":"INFO"}`, event)
 
 		payment := models.Payment{
 			ID:        uuid.New().String(),
@@ -45,12 +44,12 @@ func SubscribeToOrderEvents(db *gorm.DB) {
 		}
 
 		if err := db.Create(&payment).Error; err != nil {
-			log.Printf("Failed to save payment: %v", err)
+			log.Printf(`{"message":"Failed to create payment: %v", "service":"payment", "severity":"ERROR"}`, err)
 			msg.Nack()
 			return
 		}
 
-		log.Printf("Get payment here: %v", payment)
+		log.Printf(`{"message":"Payment created successfully: %v", "service":"payment", "severity":"INFO"}`, payment)
 
 		PublishPaymentCreated(payment)
 
@@ -58,6 +57,6 @@ func SubscribeToOrderEvents(db *gorm.DB) {
 	})
 
 	if err != nil {
-		log.Fatalf("Error receiving messages: %v", err)
+		log.Fatalf(`{"message":"Error receiving messages inside subscriber: %v", "service":"payment", "severity":"ERROR"}`, err)
 	}
 }

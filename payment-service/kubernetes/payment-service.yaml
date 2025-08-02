@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service
+  namespace: payment-service
+  labels:
+    app: payment-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: payment-service
+  template:
+    metadata:
+      labels:
+        app: payment-service
+    spec:
+      serviceAccountName: payment-ksa
+      containers:
+        - name: payment
+          image: us-central1-docker.pkg.dev/go-poc-58/payment-service-repo/payment-service:latest
+          ports:
+            - containerPort: 8081
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "200m"
+              memory: "500Mi"
+          env:
+            - name: ENV
+              value: "dev"
+            - name: DB_USER
+              value: "shivani"
+            - name: DB_HOST
+              value: "34.9.56.176"
+            - name: DB_PORT
+              value: "3306"
+            - name: DATABASE
+              value: "orders_db"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service
+  namespace: payment-service
+spec:
+  selector:
+    app: payment-service
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8081
+  type: LoadBalancer
+
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: payment-quota
+  namespace: payment-service
+spec:
+  hard:
+    requests.cpu: "1"
+    requests.memory: "1Gi"
+    limits.cpu: "2"
+    limits.memory: "2Gi"
+    pods: "5"
