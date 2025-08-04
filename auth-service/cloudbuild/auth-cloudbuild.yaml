@@ -37,7 +37,7 @@ steps:
   # 📦 Deploy to GKE
   - name: 'gcr.io/cloud-builders/kubectl'
     args: ['apply', '-f', 'kubernetes/auth-service.yaml']
-    # env:
+    env:
     - 'CLOUDSDK_COMPUTE_ZONE=us-central1'
     - 'CLOUDSDK_CONTAINER_CLUSTER=go-poc-cluster'
     - 'CLOUDSDK_CORE_PROJECT=go-poc-58'
