@@ -5,7 +5,7 @@ steps:
       'build',
       '-t', 'us-central1-docker.pkg.dev/go-poc-58/auth-service-repo/auth-service:$SHORT_SHA',
       '-t', 'us-central1-docker.pkg.dev/go-poc-58/auth-service-repo/auth-service:latest',
-      '-f', 'auth-service/Dockerfile',
+      '-f', 'Dockerfile',
       '.'
     ]
 
