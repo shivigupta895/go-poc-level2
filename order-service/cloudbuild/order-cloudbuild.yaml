@@ -1,0 +1,49 @@
+steps:
+  # 🛠 Build and tag Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'build',
+      '-t', 'us-central1-docker.pkg.dev/go-poc-58/order-service-repo/order-service:$SHORT_SHA',
+      '-t', 'us-central1-docker.pkg.dev/go-poc-58/order-service-repo/order-service:latest',
+      '-f', 'Dockerfile',
+      '.'
+    ]
+
+  # 🚀 Push latest commit image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'us-central1-docker.pkg.dev/go-poc-58/order-service-repo/order-service:$SHORT_SHA']
+
+  # 🚀 Push latest image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'us-central1-docker.pkg.dev/go-poc-58/order-service-repo/order-service:latest']
+
+  # 🔑 Get GKE credentials
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'container'
+      - 'clusters'
+      - 'get-credentials'
+      - 'go-poc-cluster'
+      - '--zone=us-central1'
+      - '--project=go-poc-58'
+
+  # 🧼 Replace image tag in deployment YAML
+  - name: 'bash'
+    args:
+      - '-c'
+      - |
+        sed -i "s|image: gcr.io/.*/order-service:.*|image: us-central1-docker.pkg.dev/go-poc-58/order-service-repo/order-service:$SHORT_SHA|" kubernetes/order-service.yaml
+
+  # 📦 Deploy to GKE
+  - name: 'gcr.io/cloud-builders/kubectl'
+    args: ['apply', '-f', 'kubernetes/order-service.yaml']
+    env:
+    - 'CLOUDSDK_COMPUTE_ZONE=us-central1'
+    - 'CLOUDSDK_CONTAINER_CLUSTER=go-poc-cluster'
+    - 'CLOUDSDK_CORE_PROJECT=go-poc-58'
+    
+images:
+  - 'us-central1-docker.pkg.dev/go-poc-58/order-service-repo/order-service:$SHORT_SHA'
+  
+options:
+  logging: CLOUD_LOGGING_ONLY
