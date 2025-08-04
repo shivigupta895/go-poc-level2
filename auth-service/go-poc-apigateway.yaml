@@ -3,16 +3,6 @@
     title: GO POC API Gateway
     version: 1.0.0
 
-  # JWT Security definition for secured routes
-  # securityDefinitions:
-  #   firebase:
-  #     authorizationUrl: ""
-  #     type: oauth2
-  #     flow: implicit
-  #     x-google-issuer: https://securetoken.google.com/arboreal-lyceum-467218-u0
-  #     x-google-jwks_uri: https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com
-  #     x-google-audiences: arboreal-lyceum-467218-u0
-
   paths:
 
   # 🔐 Auth Service
@@ -20,7 +10,6 @@
       get:
         summary: Get JWT token
         operationId: tokenHandler
-        # security: []
         x-google-backend:
           address: http://35.192.100.31.nip.io
           path_translation: APPEND_PATH_TO_ADDRESS
@@ -37,8 +26,6 @@
       post:
         summary: Create new order
         operationId: createOrder
-        # security:
-        #   - firebase: []
         x-google-backend:
           address: http://34.70.2.121.nip.io  
           path_translation: APPEND_PATH_TO_ADDRESS
@@ -62,8 +49,6 @@
             in: path
             required: true
             type: string
-        # security:
-        #   - firebase: []
         x-google-backend:
           address: http://34.70.2.121.nip.io
           path_translation: APPEND_PATH_TO_ADDRESS
@@ -87,8 +72,6 @@
             in: path
             required: true
             type: string
-        # security:
-        #   - firebase: []
         x-google-backend:
           address: http://34.70.2.121.nip.io
           path_translation: APPEND_PATH_TO_ADDRESS
@@ -108,7 +91,6 @@
       get:
         summary: Start payment service
         operationId: paymentHandler
-        # security: []
         x-google-backend:
           address: http://34.41.233.215.nip.io
           path_translation: APPEND_PATH_TO_ADDRESS
