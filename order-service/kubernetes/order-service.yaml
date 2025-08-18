@@ -43,6 +43,10 @@ spec:
               value: "go-poc-58"
             - name: PROJECT_NUMBER
               value: "560574255762"
+            - name: ORDER_TOPIC_ID
+              value: "tp-order-events"
+            - name: ORDER_SUB_ID
+              value: "sb-order-events"
 ---
 apiVersion: v1
 kind: Service
