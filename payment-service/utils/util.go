@@ -11,8 +11,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var GcpPojectNumber string = "560574255762"
-
 func LoadEnvVariables() {
 	if os.Getenv("ENV") == "" || os.Getenv("ENV") == "dev" {
 		err := godotenv.Load()
@@ -37,7 +35,7 @@ func GetSecret(secretName string) (string, error) {
 	log.Println(`{"message":"Client created, Accessing Request", "service":"payment", "severity":"INFO"}`)
 
 	accessRequest := &secretmanagerpb.AccessSecretVersionRequest{
-		Name: fmt.Sprintf("projects/%s/secrets/%s/versions/latest", GcpPojectNumber, secretName),
+		Name: fmt.Sprintf("projects/%s/secrets/%s/versions/latest", os.Getenv("PROJECT_NUMBER"), secretName),
 	}
 
 	result, err := client.AccessSecretVersion(ctx, accessRequest)
