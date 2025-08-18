@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
-	"payment-service/config"
+	"os"
 	"payment-service/models"
 
 	"cloud.google.com/go/pubsub"
@@ -12,7 +12,7 @@ import (
 
 func PublishPaymentCreated(payment models.Payment) {
 	ctx := context.Background()
-	client, err := pubsub.NewClient(ctx, config.GcpPojectId)
+	client, err := pubsub.NewClient(ctx, os.Getenv("PROJECT_ID"))
 	if err != nil {
 		log.Printf(`{"message":"PubSub client error to publish payment event: %v", "service":"payment", "severity":"ERROR"}`, err)
 		return
@@ -20,7 +20,7 @@ func PublishPaymentCreated(payment models.Payment) {
 
 	log.Println(`{"message":"Client created in PubSub request", "service":"payment", "severity":"INFO"}`)
 
-	topic := client.Topic(config.PaymentTopicId)
+	topic := client.Topic(os.Getenv("PAYMENT_TOPIC_ID"))
 	data, _ := json.Marshal(payment)
 	result := topic.Publish(ctx, &pubsub.Message{Data: data})
 

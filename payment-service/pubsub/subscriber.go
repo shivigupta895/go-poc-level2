@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
-	"payment-service/config"
+	"os"
 	"payment-service/models"
 	"time"
 
@@ -15,14 +15,14 @@ import (
 
 func SubscribeToOrderEvents(db *gorm.DB) {
 	ctx := context.Background()
-	client, err := pubsub.NewClient(ctx, config.GcpPojectId)
+	client, err := pubsub.NewClient(ctx, os.Getenv("PROJECT_ID"))
 	if err != nil {
 		log.Printf(`{"message":"Failed to create Pub/Sub client to subscribe order event: %v", "service":"payment", "severity":"ERROR"}`, err)
 	}
 
 	log.Println(`{"message":"Client created in PubSub request to subscribe order event", "service":"payment", "severity":"INFO"}`)
 
-	sub := client.Subscription(config.PaymentSubId)
+	sub := client.Subscription(os.Getenv("PAYMENT_SUB_ID"))
 	err = sub.Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
 		var event struct {
 			ID string `json:"id"`
