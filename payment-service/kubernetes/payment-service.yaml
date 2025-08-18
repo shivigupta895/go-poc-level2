@@ -43,6 +43,10 @@ spec:
               value: "go-poc-58"
             - name: PROJECT_NUMBER
               value: "560574255762"
+            - name: PAYMENT_TOPIC_ID
+              value: "tp-payment-events"
+            - name: PAYMENT_SUB_ID
+              value: "sb-payment-events"
 ---
 apiVersion: v1
 kind: Service
