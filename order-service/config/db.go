@@ -12,10 +12,6 @@ import (
 	"gorm.io/gorm"
 )
 
-var GcpPojectId string = "go-poc-58"
-var OrderTopicId string = "tp-order-events"
-var OrderSubId string = "sb-order-events"
-
 func InitDB() *gorm.DB {
 	dbUser := os.Getenv("DB_USER")
 	dbPassword, err := utils.GetSecret("DB_PASSWORD")
